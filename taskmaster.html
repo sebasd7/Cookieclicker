@@ -1,0 +1,1185 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>TaskMaster</title>
+<!--
+Code by Orteil, 2016
+Feel free to alter this code to your liking, but please do not profit from it and do not present it as your own (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License).
+This is a quick unpolished project made out of twigs and tape. Have fun!
+-->
+<style>
+*
+{
+	outline:none !important;
+}
+body,html
+{
+	position:absolute;
+	left:0px;
+	top:0px;
+	bottom:0px;
+	right:0px;
+	padding:0px;
+	margin:0px;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: -moz-none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+body
+{
+	font-family:Verdana;
+	font-size:12px;
+	background-color:#d6d6d6;
+	transition:background-color 1s;
+}
+#bg
+{
+	position:absolute;
+	left:0px;
+	top:0px;
+	bottom:0px;
+	right:0px;
+	background:url(taskmaster/bg.png);
+}
+#blocks
+{
+	position:absolute;
+	left:0px;
+	top:0px;
+	bottom:0px;
+	right:0px;
+	/*overflow:scroll;*/
+	overflow:hidden;
+	cursor:cell;
+}
+.block
+{
+	position:absolute;
+	background:#eee;
+	transition:background-color 1s, color 1s,left 0.2s,top 0.2s,transform 0.2s,transform-origin 0.2s,opacity 0.2s;
+	border-radius:8px;
+	width:92px;
+	height:92px;
+	margin:2px;
+	transform:scale(0);
+	opacity:0;
+	box-shadow:2px 2px 6px rgba(0,0,0,0.2);
+}
+.block:hover
+{
+	background:#fff;
+	z-index:1000;
+}
+.block.focused
+{
+	z-index:1000000000;
+}
+.block .name
+{
+	border-radius:8px;
+	background-color:#d6d6d6;
+	transition:background-color 1s,color 1s;
+	box-shadow:1px 1px 2px rgba(0,0,0,0.2) inset;
+	text-align:center;
+	margin:4px;
+	font-size:10px;
+}
+.block .time
+{
+	position:absolute;
+	bottom:0px;
+	text-align:center;
+	margin-bottom:4px;
+	width:100%;
+	font-size:10px;
+}
+.block:hover .time
+{
+	bottom:32px;
+	font-weight:bold;
+	background:#000;
+	color:#fff;
+	padding-top:2px;
+	padding-bottom:2px;
+}
+.block .pic
+{
+	text-align:center;
+	margin:4px;
+	font-size:40px;
+	/*text-shadow:0px 0px 8px rgba(255,255,255,0.5);*/
+}
+.block .full
+{
+	position:absolute;
+	left:0px;
+	right:0px;
+	top:0px;
+	bottom:0px;
+	margin:-2px;
+	cursor:pointer;
+}
+.block .buttons
+{
+	position:absolute;
+	bottom:-6px;
+	right:-6px;
+	display:none;
+	background:#fff;
+	border-radius:22px;
+	padding:2px;
+	box-shadow:2px 2px 6px rgba(0,0,0,0.2);
+	cursor:auto;
+}
+.block:hover .buttons
+{
+	display:block;
+}
+.block.focused:hover .buttons
+{
+	display:none;
+}
+.block .button
+{
+	border-radius:22px;
+	color:#000;
+	background:#ddd;
+	box-shadow:1px 1px 2px rgba(0,0,0,0.2) inset;
+	width:22px;
+	height:22px;
+	font-size:16px;
+	margin:2px;
+	cursor:pointer;
+	text-align:center;
+	font-weight:bold;
+	display:inline-block;
+}
+.block .button:hover
+{
+	box-shadow:none;
+	background:#000;
+	color:#fff;
+}
+#blocks .block.overtime
+{
+	background:#f00;
+	box-shadow:0px 0px 12px 2px #f00,2px 2px 6px rgba(0,0,0,0.2);
+}
+.block.overtime>.pic,.block.overtime>.time
+{
+	color:#fff;
+}
+body.overtime
+{
+	background-color:#900;
+	/*animation-name:flashRed;
+	animation-duration:4s;
+	animation-iteration-count:infinite;*/
+}
+body.overtime .block>.name
+{
+	color:#fff;
+	background:#900;
+	/*animation-name:flashRed;
+	animation-duration:4s;
+	animation-iteration-count:infinite;*/
+}
+@keyframes flashRed
+{
+	0%   {background-color:#900;}
+	50%  {background-color:#400;}
+	100% {background-color:#900;}
+}
+.title
+{
+	font-weight:bold;
+	font-variant:small-caps;
+	width:100%;
+	padding-left:12px;
+	margin-left:-12px;
+	padding-right:12px;
+	margin-right:-12px;
+	text-align:center;
+}
+#UI
+{
+	position:fixed;
+	left:0px;
+	top:0px;
+	background:#000;
+	box-shadow:0px 0px 8px 4px rgba(0,0,0,0.4);
+	border-bottom-right-radius:8px;
+	color:#fff;
+	padding:4px 12px;
+	z-index:100000000;
+	cursor:default;
+}
+#UI .divider
+{
+	width:100%;
+	height:1px;
+	background:rgba(255,255,255,0.5);
+	margin-bottom:5px;
+	margin-left:-12px;
+	padding-right:24px;
+}
+#UI #options
+{
+	margin:6px 0px;
+	text-align:center;
+}
+#UI .button
+{
+	font-size:10px;
+	/*border-bottom:1px solid rgba(255,255,255,0.25);*/
+	cursor:pointer;
+	background:#000;
+	color:#fff;
+	border-radius:2px;
+	padding:2px 4px;
+	margin-left:-2px;
+	margin-bottom:3px;
+	box-shadow:0px 0px 0px 1px #fff;
+	text-align:center;
+	position:relative;
+}
+#UI .button.on
+{
+	background:#fff;
+	color:#000;
+	box-shadow:0px 0px 0px 1px #000 inset,0px 0px 0px 1px #fff;
+	z-index:100;
+}
+#UI .button:hover
+{
+	background:#fff;
+	color:#000;
+	box-shadow:0px 0px 0px 1px #fff;
+	z-index:1000;
+}
+#UI .button.square
+{
+	width:12px;
+	height:12px;
+	display:inline-block;
+	padding:0px;
+	margin:0px 0px 3px 3px;
+}
+#UI .button.square.on,#UI .button.square:hover
+{
+	box-shadow:0px 0px 0px 2px #fff,0px 0px 0px 3px #000;
+}
+#centerAnchor
+{
+	position:fixed;
+	left:50%;
+	top:40%;
+	z-index:100000000;
+}
+#prompt
+{
+	position:absolute;
+	width:400px;
+	height:300px;
+	left:-200px;
+	top:-150px;
+	background:#000;
+	box-shadow:2px 2px 8px rgba(0,0,0,0.6);
+	border-radius:8px;
+	color:#fff;
+	padding:4px 12px;
+	cursor:default;
+	text-align:center;
+	display:none;
+}
+.emojiButton
+{
+	background:#eee;
+	border-radius:8px;
+	width:40px;
+	height:40px;
+	margin:1px;
+	box-shadow:1px 1px 2px rgba(0,0,0,0.4);
+	text-align:center;
+	color:#000;
+	font-size:30px;
+	float:left;
+	cursor:pointer;
+}
+.emojiButton:hover
+{
+	background:#fff;
+}
+.emojiList
+{
+	background:#d6d6d6;
+	box-shadow:1px 1px 2px rgba(0,0,0,0.2) inset;
+	overflow:hidden;
+	overflow-y:scroll;
+	border-radius:8px;
+	padding:4px;
+	position:absolute;
+	right:4px;
+	top:4px;
+	bottom:4px;
+	width:228px;
+}
+.fieldList
+{
+	padding:4px;
+	position:absolute;
+	left:4px;
+	top:4px;
+	bottom:4px;
+	width:168px;
+}
+.field
+{
+	width:160px;
+	border:none;
+	background:#fff;
+	box-shadow:1px 1px 3px rgba(0,0,0,0.2) inset;
+	border-radius:4px;
+	padding:2px 4px;
+}
+.fieldButton
+{
+	background:#d6d6d6;
+	color:#000;
+	margin:2px;
+	font-size:11px;
+	width:32px;
+	height:32px;
+	border:none;
+	cursor:pointer;
+	font-weight:bold;
+	box-shadow:1px 1px 3px rgba(255,255,255,0.5) inset,-1px -1px 3px rgba(0,0,0,0.5) inset;
+	text-align:center;
+}
+.fieldButton:hover
+{
+	background:#fff;
+}
+.fieldLabel
+{
+	width:160px;
+	color:#fff;
+	padding:2px 4px;
+	text-align:left;
+	font-weight:bold;
+}
+#obscure
+{
+	background:rgba(0,0,0,0.5);
+	position:fixed;
+	left:0px;
+	top:0px;
+	bottom:0px;
+	right:0px;
+	z-index:1000000;
+	display:none;
+}
+#tooltipAnchor
+{
+	z-index:100000000000000;
+	position:absolute;
+	left:0px;
+	top:0px;
+	right:0px;
+	bottom:0px;
+	overflow:hidden;
+	pointer-events:none;
+}
+#tooltip
+{
+	z-index:100000000000000;
+	position:absolute;
+	background:#000;
+	color:#fff;
+	font-size:10px;
+	border-radius:4px;
+	padding:8px;
+	box-shadow:4px 4px 4px rgba(0,0,0,0.5);
+	display:none;
+	pointer-events:none;
+	min-width:32px;
+	margin:8px;
+}
+p,ul
+{text-indent:6px;margin:4px 0px;}
+a
+{color:#fff;text-shadow:0px 0px 2px rgba(255,255,255,0.5);font-weight:bold;}
+a:hover
+{text-shadow:0px 0px 2px #fff;}
+.theme-white,.theme-white .block>.name{background-color:#d6d6d6;}.theme-white .block{background-color:#eee;}
+.theme-dark,.theme-dark .block>.name{background-color:#333;color:#fff;}.theme-dark .block{background-color:#555;}
+.theme-blue,.theme-blue .block>.name{background-color:#9df;}.theme-blue .block{background-color:#fce;}
+.theme-green,.theme-green .block>.name{background-color:#340;color:#fff;}.theme-green .block{background-color:#560;}
+#debug
+{
+	position:absolute;
+	left:0px;
+	bottom:0px;
+}
+</style>
+</head>
+<body id="base">
+	<div id="bg"></div>
+	<div id="blocks"></div>
+	<div id="obscure"></div>
+	<div id="UI"><div class="title">TaskMaster</div><div class="divider"></div><div id="options"></div></div>
+	<div id="centerAnchor">
+		<div id="prompt"></div>
+	</div>
+	<div id="debug"></div>
+	<div id="tooltipAnchor"><div id="tooltip"></div></div>
+</body>
+<script>
+function l(what) {return document.getElementById(what);}
+function choose(arr) {return arr[Math.floor(Math.random()*arr.length)];}
+var emojiStringToArray = function (str) {
+  split = str.split(/([\uD800-\uDBFF][\uDC00-\uDFFF])/);
+  arr = [];
+  for (var i=0; i<split.length; i++) {
+    char = split[i]
+    if (char !== "") {
+      arr.push(char);
+    }
+  }
+  return arr;
+};
+function AddEvent(html_element, event_name, event_function) 
+{
+   if(html_element.attachEvent) //Internet Explorer
+      html_element.attachEvent("on" + event_name, function() {event_function.call(html_element);}); 
+   else if(html_element.addEventListener) //Firefox & company
+      html_element.addEventListener(event_name, event_function, false); //don't need the 'call' trick because in FF everything already works in the right way          
+}
+var Sounds=[];
+var VOL=100;
+var PlaySound=function(url,vol,loop)
+{
+	if (options['sound']>0)
+	{
+		var volume=1;
+		if (typeof vol!=='undefined') volume=vol;
+		if (typeof loop==='undefined') var loop=false;
+		if (!VOL || volume==0) return 0;
+		if (!Sounds[url]) {Sounds[url]=new Audio(url);Sounds[url].onloadeddata=function(e){e.target.volume=Math.pow(volume*VOL/100,2);e.target.loop=loop;}}
+		else if (Sounds[url].readyState>=2) {Sounds[url].currentTime=0;Sounds[url].volume=Math.pow(volume*VOL/100,2);Sounds[url].loop=loop;}
+		Sounds[url].play();
+	}
+}
+var StopSound=function(url)
+{
+	if (Sounds[url])
+	{
+		Sounds[url].pause();
+		Sounds[url].currentTime=0;
+	}
+}
+debug='';
+function Debug(str)
+{
+	debug+='<br>'+str;
+}
+soundClick=function(){PlaySound(choose(['tick1.mp3','tick2.mp3','tick3.mp3','tick4.mp3']),0.35);}
+buttonAffectsOption=function(button,option,square,value,others)
+{
+	var baseClass='button';
+	if (square) baseClass+=' square';
+	AddEvent(button,'click',function(button,option,baseClass,value,others){return function(event){
+		if (typeof value!=='undefined' && options[option]!=value)
+		{
+			options[option]=value;
+			button.className=baseClass+' on';
+			if (others)
+			{
+				for (var i in others)
+				{
+					if (others[i]!=button) others[i].className=baseClass;
+				}
+			}
+		}
+		else if (typeof value!=='undefined' && options[option]==value)
+		{
+		}
+		else if (options[option]==0)
+		{
+			options[option]=1;
+			button.className=baseClass+' on';
+		}
+		else
+		{
+			options[option]=0;
+			button.className=baseClass;
+		}
+		soundClick();
+	}}(button,option,baseClass,value,others));
+	if ((typeof value==='undefined' && options[option]==1) || (options[option]==value)) button.className=baseClass+' on';
+	else button.className=baseClass;
+}
+options={
+	'sound':1,
+	'color':0,
+};
+colors={
+	'white':'#ddd',
+	'dark':'#333',
+	'blue':'#9df',
+	'green':'#560',
+};
+colorsByN=[];
+var n=0;for (var i in colors){colorsByN[n]=i;n++;}
+var optionsL=l('options');
+InitOptions=function()
+{
+	optionsL.innerHTML='';
+	var button=document.createElement("div");
+		button.className="button";
+		button.innerHTML="Sound";
+		optionsL.appendChild(button);
+		buttonAffectsOption(button,'sound');
+		addTooltip(button,'Turn all sounds on or off, including the alarm.');
+	var n=0;
+	var colorButtonsL=[];
+	for (var i in colors)
+	{
+		var button=document.createElement("div");
+			button.className="button square";
+			button.style.background=colors[i];
+			optionsL.appendChild(button);
+			buttonAffectsOption(button,'color',true,n,colorButtonsL);
+			addTooltip(button,'Set theme color to '+i+'.');
+			colorButtonsL.push(button);
+		n++;
+	}
+	var el=document.createElement("div");
+		el.className="divider";
+		optionsL.appendChild(el);
+	var button=document.createElement("div");
+		button.className="button";
+		button.innerHTML="Delete all";
+		optionsL.appendChild(button);
+		AddEvent(button,'click',function(event){DeleteAllBlocks();});
+		addTooltip(button,'Delete all reminders.<br>Bye bye responsibilities!');
+	var el=document.createElement("div");
+		el.className="divider";
+		optionsL.appendChild(el);
+	var button=document.createElement("div");
+		button.className="button";
+		button.innerHTML="About";
+		optionsL.appendChild(button);
+		AddEvent(button,'click',function(event){ShowPrompt('about');});
+		addTooltip(button,'View information about TaskMaster.');
+}
+//============[ LOAD & SAVE ]============
+version=1;
+Save=function()
+{
+	if (!localStorage) return 0;
+	var str='';
+	str+=version+'[,]';
+	for (var i in options)
+	{
+		str+=(options[i]).toString()+'[,]';
+	}
+	str+='[|]';
+	for (var i in blocks)
+	{
+		str+=blocks[i].name+'[,]';
+		str+=blocks[i].pic+'[,]';
+		str+=blocks[i].dur+'[,]';
+		str+=blocks[i].last+'[,]';
+		str+=blocks[i].x+'[,]';
+		str+=blocks[i].y+'[;]';
+	}
+	localStorage.setItem('TaskMasterSave',str);
+}
+Load=function()
+{
+	if (!localStorage) return 0;
+	var str=localStorage.getItem('TaskMasterSave');
+	if (!str) return 0;
+	str=str.split('[|]');
+	var bit=str[0].split('[,]');
+	var ver=bit[0];
+	var n=1;
+	for (var i in options)
+	{
+		if (bit[n]) {options[i]=parseInt(bit[n]);}
+		n++;
+	}
+	str=str[1];
+	str=str.split('[;]');
+	for (var i in str)
+	{
+		var me=str[i].split('[,]');
+		if (me.length>1)
+		{
+			var newBlock=new block();
+			newBlock.name=me[0];
+			newBlock.pic=me[1];
+			newBlock.dur=parseInt(me[2]);
+			newBlock.last=parseInt(me[3]);
+			newBlock.x=parseInt(me[4]);
+			newBlock.y=parseInt(me[5]);
+			newBlock.update();
+		}
+	}
+	InitOptions();
+}
+//============[ CLICKETY STUFF ]============
+mouseX=0;
+mouseY=0;
+mouseX2=0;
+mouseY2=0;
+mouseOffX=0;
+mouseOffY=0;
+mouseClickFromX=0;
+mouseClickFromY=0;
+mouseMoved=0;
+mouseOnTileX=0;
+mouseOnTileY=0;
+GetMouseCoords=function(e)
+{
+	var posx=0;
+	var posy=0;
+	if (!e) var e=window.event;
+	if (e.pageX||e.pageY)
+	{
+		posx=e.pageX;
+		posy=e.pageY;
+	}
+	else if (e.clientX || e.clientY)
+	{
+		posx=e.clientX+document.body.scrollLeft+document.documentElement.scrollLeft;
+		posy=e.clientY+document.body.scrollTop+document.documentElement.scrollTop;
+	}
+	var el=document.body;
+	var x=0;
+	var y=0;
+	while(el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop))
+	{
+		x+=el.offsetLeft-el.scrollLeft;
+		y+=el.offsetTop-el.scrollTop;
+		el=el.offsetParent;
+	}
+	mouseX2=mouseX;
+	mouseY2=mouseY;
+	mouseX=posx-x;
+	mouseY=posy-y;
+	mouseMoved=1;
+}
+Click=0;
+Scroll=0;
+mouseDown=0;//just clicked down
+mouseUp=0;//just released
+mousePressed=0;//still pressing
+mouseDragged=0;
+getButton=function(event)
+{
+	var button=event.which || event.button;
+	return button;
+}
+AddEvent(document,'mousemove',GetMouseCoords);
+AddEvent(document,'mousedown',function(event)
+{
+    if (getButton(event)==1)
+	{
+		if (event.target.className=='full')
+		{
+			var target=event.target.parentElement;
+			mouseOffX=mouseX-(target.offsetLeft-target.scrollLeft);
+			mouseOffY=mouseY-(target.offsetTop-target.scrollTop);
+			ClickOnBlock(blocksById[target.id]);
+			mouseDown=1;
+			mousePressed=1;
+		}
+		else if (event.target.id=='blocks')
+		{
+			mouseOffX=0;
+			mouseOffY=0;
+			mouseDown=1;
+			mousePressed=1;
+		}
+		else if (event.target.className=='button')
+		{
+			action='onButton';
+			mouseOffX=0;
+			mouseOffY=0;
+			mouseDown=1;
+			mousePressed=1;
+		}
+		mouseClickFromX=mouseX;
+		mouseClickFromY=mouseY;
+	}
+	hideTooltip();
+});
+AddEvent(document,'mouseup',function(event){if (getButton(event)==1){mouseUp=1;mousePressed=0;}});
+AddEvent(document,'click',function(event){if (getButton(event)==1){Click=1;}});
+handleScroll=function(e)
+{
+	if (!e) e=event;
+	Scroll=(e.detail<0||e.wheelDelta>0)?1:-1;
+};
+AddEvent(document,'DOMMouseScroll',handleScroll);
+AddEvent(document,'mousewheel',handleScroll);
+resizing=0;
+window.addEventListener('resize',function(event) {resizing=1;});
+function timeSince(date) {
+    var seconds = Math.floor((new Date() - date) / 1000);
+    var interval = Math.floor(seconds / 31536000);
+    if (interval > 1) {
+        return interval + " years";
+    }
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+        return interval + " months";
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+        return interval + " days";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+        return interval + " hours";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+        return interval + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
+}
+emojis=
+'💀👽💩🔥✨🌟💫💥💢💦💧💤💨👂👀👃👅👄'+
+'👍👎👊👌✌👋✋👐✊👆👇👉👈🙌🙏☝👏💪🚶🏃💃'+
+'👫👪👬👭💏💑👯🙆🙅💁🙋💆💇💅👰🙎🙍🙇🎩👑👒'+
+'👟👞👡👠👢👕👔👚👗🎽👖👘👙💼👜👝👛👓🎀🌂☔💄'+
+'💛💙💜💚❤💔💗💓💕💖💞💘💌💋💍💎👤👥💬👣💭'+
+'🌕🌔🌓🌒🌑🌚🌝🌞☀🌀⛅🌁☁🌈⛄🌊⚡🌐❄'+
+'🌜🌛🌙🌍🌎🌏🌋🌌🌠'+
+'🐶🐺🐱🐭🐹🐰🐸🐯🐨🐻🐷🐽🐮🐗🐵🐒🐴🐑🐘🐼🐧'+
+'🐦🐤🐥🐣🐔🐍🐢🐛🐝🐜🐞🐌🐙🐚🐠🐟🐬🐳🐋🐄🐏'+
+'🐀🐃🐅🐇🐉🐎🐐🐓🐕🐖🐁🐂🐲🐡🐊🐫🐪🐆🐈🐩🐾'+
+'💐🌸🌷🍀🌹🌻🌺🍁🍃🍂🌿🌾🍄🌵🌴🌲🌳🌰🌱🌼';
+emojis=emojiStringToArray(emojis);
+action='';
+//============[ TOOLTIP ]============
+tooltipL=l('tooltip');
+tooltipOn=false;
+showTooltip=function(text)
+{
+	if (!mousePressed)
+	{
+		tooltipOn=true;
+		tooltipL.innerHTML=text;
+		updateTooltip();
+		tooltipL.style.display='block';
+	}
+}
+hideTooltip=function()
+{
+	tooltipOn=false;
+	tooltipL.style.display='none';
+}
+updateTooltip=function()
+{
+	if (tooltipOn)
+	{
+		tooltipL.style.left=mouseX+'px';
+		tooltipL.style.top=mouseY+'px';
+	}
+}
+addTooltip=function(element,text)
+{
+	AddEvent(element,'mouseover',function(text){return function(event){showTooltip(text);}}(text));
+	AddEvent(element,'mouseout',function(){return function(event){hideTooltip();}}());
+}
+//============[ BLOCKS ]============
+blocksL=l('blocks');
+blocks=[];
+blocksById=[];
+blockSelected=0;
+BS=96;//block size
+block=function()
+{
+	this.name="Untitled";
+	this.pic=choose(emojis);
+	this.dur=60*5;//in seconds
+	this.last=Math.floor(new Date().getTime()/1000);
+	this.x=-1;
+	this.y=-1;
+	this.setPos=function(x,y)
+	{
+		var blocked=0;
+		if (x<-BS/2) {blocked=1;}
+		if (y<-BS/2) {blocked=1;}
+		//if (x>blocksL.offsetWidth-BS) x=blocksL.offsetWidth-BS;
+		//if (y>blocksL.offsetHeight-BS) y=blocksL.offsetHeight-BS;
+		if (x>blocksL.offsetWidth-BS) {blocked=1;}
+		if (y>blocksL.offsetHeight-BS) {blocked=1;}
+		if (Math.round(x/BS)==0 && Math.round(y/BS)<2) blocked=1;//block the top-left 2 tiles
+		x=Math.round(x/BS)*BS;
+		y=Math.round(y/BS)*BS;
+		var other=GetBlockAt(x,y);
+		if (!blocked && (!other || other.el.id==this.el.id))
+		{
+			this.el.style.left=Math.floor(x)+"px";
+			this.el.style.top=Math.floor(y)+"px";
+			this.x=Math.floor(x);
+			this.y=Math.floor(y);
+			this.el.style.transform='scale(1,1)';
+		}
+		else blocked=1;
+		if (blocked)
+		{
+			if (x>this.x && y>this.y)
+			{
+				this.el.style.transform='scale(0.75,0.75)';
+				this.el.style.transformOrigin='100% 100%';
+			}
+			else if (x>this.x && y<this.y)
+			{
+				this.el.style.transform='scale(0.75,0.75)';
+				this.el.style.transformOrigin='100% 0%';
+			}
+			else if (x<this.x && y<this.y)
+			{
+				this.el.style.transform='scale(0.75,0.75)';
+				this.el.style.transformOrigin='0% 0%';
+			}
+			else if (x<this.x && y>this.y)
+			{
+				this.el.style.transform='scale(0.75,0.75)';
+				this.el.style.transformOrigin='0% 100%';
+			}
+			else if (x>this.x)
+			{
+				this.el.style.transform='scale(0.5,1.2)';
+				this.el.style.transformOrigin='100% 50%';
+			}
+			else if (x<this.x)
+			{
+				this.el.style.transform='scale(0.5,1.2)';
+				this.el.style.transformOrigin='0% 50%';
+			}
+			else if (y>this.y)
+			{
+				this.el.style.transform='scale(1.2,0.5)';
+				this.el.style.transformOrigin='50% 100%';
+			}
+			else if (y<this.y)
+			{
+				this.el.style.transform='scale(1.2,0.5)';
+				this.el.style.transformOrigin='50% 0%';
+			}
+		}
+		return !blocked;
+	}
+	this.update=function(soft)
+	{
+		this.nameL.innerHTML=this.name;
+		this.picL.innerHTML=this.pic;
+		if (!soft) this.setPos(this.x,this.y);
+	}
+	//i think i'll just get back to inline innerHTML
+	this.el=document.createElement("div");
+		this.el.className="block";
+		this.el.id="block"+(blocks.length);
+	this.nameL=document.createElement("div");
+		this.nameL.className="name";
+		this.nameL.innerHTML=this.name;
+		this.el.appendChild(this.nameL);
+	this.picL=document.createElement("div");
+		this.picL.className="pic";
+		this.picL.innerHTML=this.pic;
+		this.el.appendChild(this.picL);
+	this.timeL=document.createElement("div");
+		this.timeL.className="time";
+		this.el.appendChild(this.timeL);
+	this.fullL=document.createElement("div");
+		this.fullL.className="full";
+		this.el.appendChild(this.fullL);
+		addTooltip(this.fullL,'Click to reset the timer on this reminder.<br>Click and drag to move this reminder.');
+	var buttons=document.createElement("div");
+		buttons.className="buttons";
+		this.el.appendChild(buttons);
+	var button=document.createElement("div");
+		button.className="button";
+		button.innerHTML="e";
+		buttons.appendChild(button);
+		AddEvent(button,'click',function(block){return function(event){blockSelected=block;ShowPrompt('edit');}}(this));
+		addTooltip(button,'Edit this reminder.');
+	var button=document.createElement("div");
+		button.className="button";
+		button.innerHTML="x";
+		buttons.appendChild(button);
+		AddEvent(button,'click',function(block){return function(event){DeleteBlock(block);}}(this));
+		addTooltip(button,'Delete this reminder.');
+	this.setPos(blocksL.offsetWidth/2,blocksL.offsetHeight/2);
+	blocksL.appendChild(this.el);
+	setTimeout(function(el){return function(){el.style.opacity=1;el.style.transform='scale(1)';}}(this.el),10);
+	blocks.push(this);
+	blocksById[this.el.id]=this;
+}
+ClickOnBlock=function(me)
+{
+	blockSelected=me;
+}
+DeleteBlock=function(me)
+{
+	blockSelected=0;
+	var index=blocks.indexOf(me);if (index>-1) blocks.splice(index,1);
+	var index=blocksById.indexOf(me.el.id);if (index>-1) blocksById.splice(index,1);
+	me.el.parentNode.removeChild(me.el);
+	me=0;
+	PlaySound(choose(['pop1.mp3','pop2.mp3','pop3.mp3']),0.5);
+}
+DeleteAllBlocks=function()
+{
+	blockSelected=0;
+	for (var i in blocks)
+	{
+		var me=blocks[i];
+		me.el.parentNode.removeChild(me.el);
+		me=0;
+	}
+	blocks=[];
+	blocksById=[];
+	PlaySound(choose(['pop1.mp3','pop2.mp3','pop3.mp3']),0.5);
+}
+GetBlockAt=function(x,y)
+{
+	for (var i in blocks)
+	{
+		if (blocks[i].x==x && blocks[i].y==y) return blocks[i];
+	}
+}
+SetIcon=function(block,pic)
+{
+	block.pic=pic;
+	block.update(1);
+	PlaySound(choose(['pop1.mp3','pop2.mp3','pop3.mp3']),0.5);
+}
+SetName=function(block,name)
+{
+	block.name=name;
+	block.update(1);
+}
+AddDur=function(block,dur)
+{
+	block.dur+=dur;
+	block.dur=Math.max(block.dur,0);
+	block.update(1);
+	soundClick();
+}
+promptOn=0;
+promptL=l('prompt');
+obscureL=l('obscure');
+ShowPrompt=function(what)
+{
+	promptOn=1;
+	obscureL.style.display='block';
+	promptL.style.display='block';
+	//build prompt
+	promptL.innerHTML='';
+	if (what=='edit')
+	{
+		var fieldList=document.createElement("div");
+			fieldList.className="fieldList";
+			promptL.appendChild(fieldList);
+		var field=document.createElement("div");
+			field.className="fieldLabel";
+			field.innerHTML="Name";
+			fieldList.appendChild(field);
+		var field=document.createElement("input");
+			field.className="field";
+			field.type="text";
+			field.value=blockSelected.name;
+			fieldList.appendChild(field);
+			AddEvent(field,'input',function(block){return function(event){SetName(block,event.target.value);}}(blockSelected));
+		var field=document.createElement("div");
+			field.className="fieldLabel";
+			field.innerHTML="Cycle duration";
+			fieldList.appendChild(field);
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="+1s";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,1);}}(blockSelected));
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="+1m";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,60);}}(blockSelected));
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="+1h";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,60*60);}}(blockSelected));
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="+1d";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,60*60*24);}}(blockSelected));
+		var field=document.createElement("br");fieldList.appendChild(field);
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="-1s";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,-1);}}(blockSelected));
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="-1m";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,-60);}}(blockSelected));
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="-1h";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,-60*60);}}(blockSelected));
+		var field=document.createElement("input");field.className="fieldButton";field.type="button";field.value="-1d";fieldList.appendChild(field);AddEvent(field,'click',function(block){return function(event){AddDur(block,-60*60*24);}}(blockSelected));
+		var emojiList=document.createElement("div");
+			emojiList.className="emojiList";
+			promptL.appendChild(emojiList);
+		for (var i in emojis)
+		{
+			var button=document.createElement("div");
+				button.className="emojiButton";
+				button.innerHTML=emojis[i];
+				emojiList.appendChild(button);
+				AddEvent(button,'click',function(block,pic){return function(event){SetIcon(block,pic);}}(blockSelected,emojis[i]));
+		}
+		blockSelected.el.className='block focused';
+		var rect=promptL.getBoundingClientRect();
+		blockSelected.el.style.left=(rect.left-98)+'px';
+		blockSelected.el.style.top=(rect.top-2)+'px';
+	}
+	else
+	{
+		var str='<div style="color:#ddd;text-align:left;font-size:11px;overflow-y:scroll;height:100%;">'+
+			'<h3>About</h3>'+
+			'<p><b>TaskMaster</b> is a motivational tool made by <a href="http://orteil.dashnet.org/" target="_blank">Orteil</a> (<a href="http://orteil42.tumblr.com/" target="_blank">tumblr</a>) in an attempt to combat his crippling procrastination.</p><p>Whether this worked out for him is up for debate, but this tool has now been made public for all to use.</p><br>'+
+			'<p>The gist of TaskMaster is that you create <b>reminders</b> (by clicking anywhere on the board) that tick down until they run out; for instance, a reminder to take your meds every 24 hours, or to water your plants every 3 days.</p><p>You\'d then click each reminder as you complete the associated tasks, which resets their timers (you\'ll have to promise yourself not to cheat!).</p><p>If one or more reminders run out of time, the whole screen goes red and an ominous sound plays - until you complete your tasks and reset the guilty reminders.</p><br>'+
+			'<p>TaskMaster is <b>devware</b> (designed mostly for the developer\'s own use) and may contain bugs.</p><br>'+
+			'<p>TaskMaster is provided free of charge with the intent of helping people.</p><p>You may download, modify, and re-upload TaskMaster as you wish, as long as you <b>do not add ads or monetize it in any way</b> and <b>do not claim it as your own</b>.</p><br>'+
+			'<p><b>Version history</b></p>'+
+			'<p>8/7/2016<br></p><ul><li>released TaskMaster after a year of it sitting on my hard-drive</li></ul>'+
+			'<div style="text-align:center;margin:40px;"><a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png"/></a><br>This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>.</div>'+
+			'</div>'+
+		'';
+		promptL.innerHTML=str;
+	}
+	soundClick();
+}
+HidePrompt=function()
+{
+	promptOn=0;
+	obscureL.style.display='none';
+	promptL.style.display='none';
+	if (blockSelected)
+	{
+		blockSelected.el.className='block';
+		blockSelected.setPos(blockSelected.x,blockSelected.y);
+	}
+	soundClick();
+}
+AddEvent(obscureL,'click',function(event){HidePrompt();});
+cursor='auto';
+safetyDelay=0;//can't create any new blocks if this is >0
+windowW=0;
+windowH=0;
+base=l('base');
+bgL=l('bg');
+blocksL.onscroll=function()
+{
+	bgL.style.backgroundPosition=(-blocksL.scrollLeft)+'px '+(-blocksL.scrollTop)+'px';
+}
+overtime=0;
+overtimeSoundPlaying=false;
+InitOptions();
+Load();
+//============[ LOOP ]============
+T=0;
+Loop=function()
+{
+	var now=Math.floor(new Date().getTime()/1000);
+	windowW=window.innerWidth;
+	windowH=window.innerHeight;
+	if (resizing && T%10==0)
+	{
+		for (var i in blocks)
+		{
+			var me=blocks[i];
+			me.setPos(me.x,me.y);
+		}
+		resizing=0;
+	}
+	if (!promptOn)
+	{
+		if (action=='' && mouseDown && !blockSelected && safetyDelay<=0)
+		{
+			var me=new block();
+			blockSelected=me;
+			action='creating';
+			PlaySound(choose(['pop1.mp3','pop2.mp3','pop3.mp3']),0.5);
+			safetyDelay=5;
+		}
+		if (action=='' && mouseDown && blockSelected)
+		{
+			PlaySound('smallTick.mp3');
+		}
+		if (mousePressed && blockSelected)
+		{
+			if (action!='creating') action='dragging';
+			var x=mouseX-mouseOffX;
+			var y=mouseY-mouseOffY;
+			if (action=='creating')
+			{
+				x-=blockSelected.el.offsetWidth/2;
+				y-=blockSelected.el.offsetHeight/2;
+			}
+			var oldX=blockSelected.x;
+			var oldY=blockSelected.y;
+			var success=blockSelected.setPos(x,y);
+			if (oldX!=blockSelected.x || oldY!=blockSelected.y) PlaySound('smallTick.mp3');
+			if (mouseX!=mouseX2 || mouseY!=mouseY2) mouseDragged=1;
+			cursor='move';
+			//if (!success && action=='creating' && mouseDown) DeleteBlock(blockSelected);
+		}
+		if (mouseUp)
+		{
+			//if (blockSelected && action=='dragging') PlaySound('smallTick.mp3');
+			if (blockSelected) blockSelected.setPos(blockSelected.x,blockSelected.y);
+			if (blockSelected && action!='creating' && action!='onButton' && (Math.abs(mouseClickFromX-mouseX)+Math.abs(mouseClickFromY-mouseY))<3)
+			{
+				blockSelected.last=now;//reset timer
+				blockSelected.update();
+				soundClick();
+			}
+			blockSelected=0;
+			mouseDragged=0;
+			action='';
+		}
+	}
+	var overtimedBlocks=0;
+	for (var i in blocks)
+	{
+		var me=blocks[i];
+		var time=now-me.last;
+		time=me.dur-time;//show countdown to cycle duration
+		if (me==blockSelected && promptOn) time=me.dur;//show full duration when editing
+		time=Math.max(time,0);
+		var seconds=time%60;
+		var minutes=Math.floor(time/60)%60;
+		var hours=Math.floor(time/(60*60))%(24);
+		var days=Math.floor(time/(60*60*24));
+		var str='';
+		if (days>0) str+=days+'d';
+		if (hours>0) str+=hours+'h';
+		if (minutes>0) str+=minutes+'m';
+		str+=seconds+'s';
+		if (time>0) me.el.className='block'; else {me.el.className='block overtime';overtimedBlocks++;}
+		me.timeL.innerHTML=str;
+	}
+	var bodyClass='';
+	bodyClass+='theme-'+colorsByN[options['color']];
+	if (overtimedBlocks>0) bodyClass='overtime';//bodyClass+=' overtime';
+	if (options['sound']==1 && overtimedBlocks>0 && overtimeSoundPlaying==0) {PlaySound('loomingDeadlines.mp3',1,true);overtimeSoundPlaying=1;}
+	else if ((options['sound']==0 || overtimedBlocks==0) && overtimeSoundPlaying>0) {StopSound('loomingDeadlines.mp3');overtimeSoundPlaying=0;}
+	overtime=overtimedBlocks;
+	if (base.className!=bodyClass) base.className=bodyClass;
+	if (T%30*5==0) Save();//save every 5 seconds
+	updateTooltip();
+	Click=0;
+	Scroll=0;
+	mouseMoved=0;
+	mouseDown=0;
+	mouseUp=0;
+	if (safetyDelay>0) safetyDelay--;
+	l('debug').innerHTML=debug;
+	debug='';
+	document.body.style.cursor=cursor;
+	T++;
+	setTimeout(Loop,1000/30);
+}
+Loop();
+</script>
+</html>
